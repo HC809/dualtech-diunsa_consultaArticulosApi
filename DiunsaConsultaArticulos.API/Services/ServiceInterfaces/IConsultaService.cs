@@ -10,5 +10,6 @@ namespace DiunsaConsultaArticulos.API.Services.ServiceInterfaces
     public interface IConsultaService
     {
         ArticuloInfoDTO CosultaArticulo(string barCode, string macAddress);
+        ArticuloInfoDTO CosultaPrecios(string barCode);
     }
 }

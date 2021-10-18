@@ -58,6 +58,44 @@ namespace DiunsaConsultaArticulos.API.Services
 
                 consultaArticulo.cuotaCrediDiunsaNormal = Math.Round(GetCuotaCrediDiunsa(precioParaCuota, tasaInteresNormal), 2);
                 consultaArticulo.cuotaCrediDiunsaVIP = Math.Round(GetCuotaCrediDiunsa(precioParaCuota, tasaInteresVIP), 2);
+
+                if (consultaArticulo.precioCrediDiunsa == 0) consultaArticulo.precioCrediDiunsa = precioParaCuota;
+            }
+
+            return consultaArticulo;
+        }
+
+        public ArticuloInfoDTO CosultaPrecios(string barCode)
+        {
+            double tasaInteresNormal = 0.0708;
+            double tasaInteresVIP = 0.0407;
+
+            ArticuloInfoDTO consultaArticulo = new ArticuloInfoDTO();
+
+
+            var tasks = new List<Task>()
+                 {
+                     GetArticuloPrecios(barCode),
+                     GetArticuloImagenUrl(barCode),
+                 };
+
+            var completedTasks = Task.WhenAll(tasks.ToArray());
+
+            completedTasks.Wait();
+
+            consultaArticulo = ((Task<ArticuloInfoDTO>)tasks[0]).Result;
+
+            if (consultaArticulo != null)
+            {
+                consultaArticulo.tienda = "T01";
+                consultaArticulo.imagenUrl = ((Task<string>)tasks[1]).Result;
+
+                decimal precioParaCuota = consultaArticulo.precioOferta > 0 ? consultaArticulo.precioOferta : consultaArticulo.precioNormal;
+
+                consultaArticulo.cuotaCrediDiunsaNormal = Math.Round(GetCuotaCrediDiunsa(precioParaCuota, tasaInteresNormal), 2);
+                consultaArticulo.cuotaCrediDiunsaVIP = Math.Round(GetCuotaCrediDiunsa(precioParaCuota, tasaInteresVIP), 2);
+
+                if (consultaArticulo.precioCrediDiunsa == 0) consultaArticulo.precioCrediDiunsa = precioParaCuota;
             }
 
             return consultaArticulo;
@@ -72,6 +110,22 @@ namespace DiunsaConsultaArticulos.API.Services
             {
                 db.Open();
                 var response = await db.QueryFirstOrDefaultAsync<ArticuloInfo>(ConsultaQueries.InfoArticulo, new { barCode, macAddress });
+                articuloInfo = _mapper.Map<ArticuloInfo, ArticuloInfoDTO>(response);
+                db.Close();
+            }
+
+            return articuloInfo;
+        }
+
+        private async Task<ArticuloInfoDTO> GetArticuloPrecios(string barCode)
+        {
+            IDbConnection db = GetDbconnection();
+            ArticuloInfoDTO articuloInfo;
+
+            using (db)
+            {
+                db.Open();
+                var response = await db.QueryFirstOrDefaultAsync<ArticuloInfo>(ConsultaQueries.ConsultaPrecios, new { barCode });
                 articuloInfo = _mapper.Map<ArticuloInfo, ArticuloInfoDTO>(response);
                 db.Close();
             }

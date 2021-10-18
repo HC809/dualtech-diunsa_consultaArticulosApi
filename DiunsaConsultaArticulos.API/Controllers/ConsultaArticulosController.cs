@@ -33,5 +33,17 @@ namespace DiunsaConsultaArticulos.API.Controllers
 
             return Ok(response);
         }
+
+        [HttpGet]
+        [Route("~/api/[controller]/Precios/{barCode}")]
+        public IActionResult Get(string barCode)
+        {
+            var response = _service.CosultaPrecios(barCode);
+
+            if (response == null)
+                return NotFound($"No se encontro artículo con código de barra {barCode}");
+
+            return Ok(response);
+        }
     }
 }

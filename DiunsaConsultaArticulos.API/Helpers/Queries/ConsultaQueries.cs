@@ -23,6 +23,20 @@ namespace DiunsaConsultaArticulos.API.Helpers.Queries
 	                                            left join RBOINTERFACES.dbo.OFERTAS_NAV_VAP cred on sp.[Item No_] = cred.ITEMID collate SQL_Latin1_General_CP1_CI_AS and cred.TIENDA = dp.TIENDA
                                             where (CODIGO_BARRA = @barCode and sp.[Sales Code] = 'PV');";
 
+        public const string ConsultaPrecios = @"select
+												ra.CODIGO_ARTICULO codigoArticulo,
+												ra.DESCRIPCION descripcion,
+												sp.[Unit Price Including VAT] precioNormal,
+												COALESCE(ofn.PRECIO_OFERTA_VAT,0) precioOferta,
+												COALESCE(am.PRECIO_OFERTA_VAT,0) precioAhorroMas,
+												COALESCE(cred.PRECIO_OFERTA_VAT,0) precioCrediDiunsa
+											from CONS_ResumenArticulos ra
+												left join LSRETAIL01A.dbo.[DIUNSA$Sales Price] sp on ra.CODIGO_ARTICULO = sp.[Item No_]
+												left join RBOINTERFACES.dbo.OFERTAS_NAV ofn on sp.[Item No_] = ofn.ITEMID collate SQL_Latin1_General_CP1_CI_AS and ofn.TIENDA = 'T01'
+												left join RBOINTERFACES.dbo.OFERTAS_NAV_AM am on sp.[Item No_] = am.ITEMID collate SQL_Latin1_General_CP1_CI_AS and am.TIENDA = 'T01'
+												left join RBOINTERFACES.dbo.OFERTAS_NAV_VAP cred on sp.[Item No_] = cred.ITEMID collate SQL_Latin1_General_CP1_CI_AS and cred.TIENDA = 'T01'
+											where (CODIGO_BARRA = @barCode and sp.[Sales Code] = 'PV')";
+
         //public const string PrecioOferta = @"SELECT PRECIO_OFERTA_VAT precioOferta 
         //	FROM RBOINTERFACES.dbo.OFERTAS_NAV 
         //	WHERE ITEMID = @itemId AND TIENDA = @codigoTienda";
